@@ -7,7 +7,7 @@ import userRouter from './routes/userRoute.js'
 import productRouter from './routes/productRoute.js'
 import cartRouter from './routes/cartRoute.js'
 import orderRouter from './routes/orderRoute.js'
-
+import reviewRoutes from "./routes/reviewRoutes.js";
 // App Config
 const app = express()
 const port = process.env.PORT || 4000;
@@ -27,5 +27,5 @@ app.use('/api/order', orderRouter)
 app.get('/', (req, res) => {
     res.send("API Working")
 })
-
+app.use("/api/reviews", reviewRoutes);
 app.listen(port, () => console.log('Server started on PORT : ' + port))

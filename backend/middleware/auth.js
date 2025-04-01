@@ -1,6 +1,9 @@
 import jwt from 'jsonwebtoken'
+export const verifyToken = (req, res, next) => {
+    // Your token verification logic here
+};
 
-const authUser = async (req, res, next) => {
+const authUser = async(req, res, next) => {
 
     const { token } = req.headers;
 

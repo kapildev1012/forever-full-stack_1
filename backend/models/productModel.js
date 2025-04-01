@@ -7,11 +7,11 @@ const productSchema = new mongoose.Schema({
     image: { type: Array, required: true },
     category: { type: String, required: true },
     subCategory: { type: String, required: true },
-    sizes: { type: Array, required: true },
+    sizes: { type: [mongoose.Schema.Types.Mixed], required: true }, // ✅ Accepts both numbers & strings
     bestseller: { type: Boolean },
     date: { type: Number, required: true }
-})
+});
 
-const productModel  = mongoose.models.product || mongoose.model("product",productSchema);
+const productModel = mongoose.models.product || mongoose.model("product", productSchema);
 
-export default productModel
+export default productModel;
