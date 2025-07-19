@@ -30,7 +30,10 @@ const CategoryList = () => {
   };
 
   return (
-    <section className="px-4 sm:px-6 py-8 bg-gradient-to-br from-white to-green-100">
+    <section
+      className="relative mt-3 px-6 sm:px-10 md:px-16 lg:px-24 py-12 md:py-20 bg-gradient-to-br from-green-600 via-green-300 to-green-100 shadow-2xl rounded-3xl border border-emerald-300/40 backdrop-blur-md
+"
+    >
       <h2 className="text-3xl font-bold mb-6 text-center text-purple-700">
         Shop by <span className="text-gray-900">Category</span>
       </h2>
