@@ -11,8 +11,6 @@ import {
   FaTimes,
   FaPlus,
   FaFileExport,
-  FaPen,
-  FaEye,
 } from "react-icons/fa";
 import { MdOutlineInventory } from "react-icons/md";
 import { CSVLink } from "react-csv";
@@ -22,6 +20,19 @@ const List = ({ token }) => {
   const [list, setList] = useState([]);
   const [search, setSearch] = useState("");
   const [sortOrder, setSortOrder] = useState("desc");
+  const [fields, setFields] = useState([
+    "name",
+    "category",
+    "subCategory",
+    "price",
+    "sizes",
+    "bestseller",
+    "date",
+    "inStock",
+    
+  ]);
+  const [selectedFields, setSelectedFields] = useState(fields);
+
   const navigate = useNavigate();
 
   const fetchList = async () => {
@@ -66,6 +77,49 @@ const List = ({ token }) => {
     .sort((a, b) =>
       sortOrder === "asc" ? a.price - b.price : b.price - a.price
     );
+const toggleStockStatus = async (id, inStock) => {
+  try {
+    const response = await axios.post(
+      backendUrl + "/api/product/update-stock",
+      { id, inStock: !inStock },
+      { headers: { token } }
+    );
+    if (response.data.success) {
+      toast.success("Stock status updated");
+      await fetchList();
+    } else {
+      toast.error(response.data.message);
+    }
+  } catch (error) {
+    toast.error(error.message);
+  }
+};
+
+  const exportData = filteredList.map((item) => {
+    const exportItem = {};
+    selectedFields.forEach((field) => {
+      switch (field) {
+        case "sizes":
+          exportItem[field] = Array.isArray(item.sizes)
+            ? item.sizes.join(", ")
+            : typeof item.sizes === "object"
+            ? Object.entries(item.sizes)
+                .map(([size, price]) => `${size} (${currency}${price})`)
+                .join(", ")
+            : "—";
+          break;
+        case "image":
+          exportItem[field] = item.image?.[0] || "—";
+          break;
+        case "date":
+          exportItem[field] = new Date(item.date).toLocaleString();
+          break;
+        default:
+          exportItem[field] = item[field];
+      }
+    });
+    return exportItem;
+  });
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen font-sans text-gray-800">
@@ -100,17 +154,53 @@ const List = ({ token }) => {
           >
             <FaPlus /> Refresh
           </button>
-
-          <CSVLink
-            data={filteredList}
-            filename="product_inventory.csv"
-            className="px-4 py-2 rounded-md bg-gray-700 text-white hover:bg-gray-800 text-sm flex items-center gap-2"
-          >
-            <FaFileExport /> Export CSV
-          </CSVLink>
         </div>
       </div>
 
+      {/* Export Options */}
+      <div className="bg-white p-4 rounded-md shadow border mb-4">
+        <h3 className="text-sm font-bold mb-2">Export Columns:</h3>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+          {fields.map((field) => (
+            <label key={field} className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={selectedFields.includes(field)}
+                onChange={() =>
+                  setSelectedFields((prev) =>
+                    prev.includes(field)
+                      ? prev.filter((f) => f !== field)
+                      : [...prev, field]
+                  )
+                }
+              />
+              {field}
+            </label>
+          ))}
+          <button
+            onClick={() => setSelectedFields(fields)}
+            className="text-blue-500 text-xs underline col-span-full mt-2"
+          >
+            Select All
+          </button>
+        </div>
+        {exportData.length > 0 ? (
+          <CSVLink
+            data={exportData}
+            filename={`product_inventory_${new Date()
+              .toISOString()
+              .slice(0, 19)
+              .replace(/:/g, "-")}.csv`}
+            className="mt-4 inline-flex items-center gap-2 bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-900 text-sm"
+          >
+            <FaFileExport /> Export CSV
+          </CSVLink>
+        ) : (
+          <p className="text-red-500 font-semibold mt-2">No data to export</p>
+        )}
+      </div>
+
+      {/* Product Cards */}
       <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
         {filteredList.map((item, i) => (
           <div

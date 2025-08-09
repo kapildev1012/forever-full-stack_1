@@ -5,6 +5,15 @@ import { toast } from "react-toastify";
 import { FaDownload } from "react-icons/fa";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid,
+} from "recharts";
 
 const Orders = ({ token }) => {
   const [orders, setOrders] = useState([]);
@@ -23,6 +32,12 @@ const Orders = ({ token }) => {
   const [statusUpdating, setStatusUpdating] = useState("");
   const billRefs = useRef({});
 
+  // New states for summary
+  const [totalRevenue, setTotalRevenue] = useState(0);
+  const [uniqueUsers, setUniqueUsers] = useState([]);
+const [monthlyRevenueData, setMonthlyRevenueData] = useState([]);
+const [topSellingItems, setTopSellingItems] = useState([]);
+
   const fetchAllOrders = async () => {
     if (!token) return;
     setLoading(true);
@@ -38,11 +53,81 @@ const Orders = ({ token }) => {
         );
         const ordersWithIds = sortedByDateAsc.map((order, index) => ({
           ...order,
-          numericId: index + 1, // Oldest gets ID 1
+          numericId: index + 1,
         }));
-        const sortedNewestFirst = [...ordersWithIds].reverse(); // Newest shows first
+        const sortedNewestFirst = [...ordersWithIds].reverse();
         setOrders(sortedNewestFirst);
         setFilteredOrders(sortedNewestFirst);
+
+        // 📊 Revenue Calculation with Monthly Breakdown
+        const monthlyMap = {};
+        const productMap = {};
+
+        sortedNewestFirst.forEach((order) => {
+          const orderDate = new Date(order.date);
+          const monthKey = orderDate.toLocaleString("default", {
+            month: "long",
+            year: "numeric",
+          });
+
+          const delivery = order.amount < 200 ? 30 : 0;
+          const total = order.amount + delivery;
+
+          // Monthly Revenue Grouping
+          if (!monthlyMap[monthKey]) monthlyMap[monthKey] = 0;
+          monthlyMap[monthKey] += total;
+
+          // Top Product Calculation
+          order.items.forEach((item) => {
+            const key = `${item.name}-${item.size}`;
+            if (!productMap[key]) {
+              productMap[key] = {
+                name: item.name,
+                size: item.size,
+                quantity: 0,
+                revenue: 0,
+              };
+            }
+            productMap[key].quantity += item.quantity;
+            productMap[key].revenue += item.quantity * item.price;
+          });
+        });
+
+        // Monthly revenue array sorted by month
+        const monthlyData = Object.entries(monthlyMap)
+          .map(([month, revenue]) => ({ month, revenue }))
+          .sort((a, b) => new Date(a.month) - new Date(b.month));
+        setMonthlyRevenueData(monthlyData);
+
+        // Top 5 selling items by quantity
+        const topItems = Object.values(productMap)
+          .sort((a, b) => b.quantity - a.quantity)
+          .slice(0, 5);
+        setTopSellingItems(topItems);
+
+        // Overall Total
+        const overallRevenue = Object.values(monthlyMap).reduce(
+          (sum, r) => sum + r,
+          0
+        );
+        setTotalRevenue(overallRevenue);
+
+        // 👤 Unique User Calculation
+        const usersMap = {};
+        sortedNewestFirst.forEach((order) => {
+          const email = order.address?.email;
+          if (!email) return;
+          if (!usersMap[email]) {
+            usersMap[email] = {
+              name: `${order.address.firstName} ${order.address.lastName}`,
+              email: order.address.email,
+              phone: order.address.phone,
+              city: order.address.city,
+              country: order.address.country,
+            };
+          }
+        });
+        setUniqueUsers(Object.values(usersMap));
       } else toast.error(data.message);
     } catch (err) {
       toast.error(err.message);
@@ -55,7 +140,6 @@ const Orders = ({ token }) => {
     fetchAllOrders();
   }, [token]);
 
-  // ✅ Auto refresh every 10 seconds
   useEffect(() => {
     const interval = setInterval(() => {
       fetchAllOrders();
@@ -87,43 +171,13 @@ const Orders = ({ token }) => {
     setFilteredOrders(updated);
   }, [filters, orders]);
 
-  const statusHandler = async (event, orderId) => {
-    const newStatus = event.target.value;
-    setStatusUpdating(orderId);
-    try {
-      const { data } = await axios.post(
-        `${backendUrl}/api/order/status`,
-        { orderId, status: newStatus },
-        { headers: { token } }
-      );
-      if (data.success) {
-        setOrders((prev) =>
-          prev.map((o) => (o._id === orderId ? { ...o, status: newStatus } : o))
-        );
-        toast.success("Status updated successfully");
-      }
-    } catch (err) {
-      toast.error(err.message);
-    } finally {
-      setStatusUpdating("");
-    }
-  };
-
   const downloadBill = async (orderId) => {
     const input = billRefs.current[orderId];
     if (!input) return;
-
-    // Wait briefly to ensure DOM is fully rendered
     await new Promise((res) => setTimeout(res, 200));
-
     const canvas = await html2canvas(input, { scale: 2, useCORS: true });
     const imgData = canvas.toDataURL("image/png");
-
-    const imgProps = {
-      width: canvas.width,
-      height: canvas.height,
-    };
-
+    const imgProps = { width: canvas.width, height: canvas.height };
     const pdfWidth = 300;
     const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
 
@@ -134,34 +188,22 @@ const Orders = ({ token }) => {
     });
 
     pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-
-    // Get order details for filename
     const order = orders.find((o) => o._id === orderId);
     if (!order) return;
-
-    // Format name: no space
     const name = `${order.address.firstName}${order.address.lastName}`.replace(
       /\s+/g,
       ""
     );
-
-    // Format date and time safely for filenames
     const dateObj = new Date(order.date);
-    const rawDate = dateObj.toLocaleDateString("en-IN"); // 28/06/2025
+    const rawDate = dateObj.toLocaleDateString("en-IN");
     const rawTime = dateObj.toLocaleTimeString("en-IN", {
       hour: "2-digit",
       minute: "2-digit",
       hour12: true,
-    }); // e.g., 11:30 AM
-
-    // Replace restricted characters for filename safety
-    const safeDate = rawDate.replace(/\//g, "/"); // → 28-06-2025
-    const safeTime = rawTime.replace("-", ":").replace(/\s/g, ":"); // → 11-30AM
-
-    // Create final filename
+    });
+    const safeDate = rawDate.replace(/\//g, "-");
+    const safeTime = rawTime.replace(":", "-").replace(/\s/g, "");
     const fileName = `Order${order.numericId}_${name}_${safeDate}_${safeTime}.pdf`;
-
-    // Save PDF
     pdf.save(fileName);
   };
 
@@ -183,9 +225,7 @@ const Orders = ({ token }) => {
   };
 
   const getUserAvatar = (name) => {
-    return name.toLowerCase().startsWith("mr")
-      ? "https://randomuser.me/api/portraits/women/1.jpg"
-      : "https://randomuser.me/api/portraits/women/1.jpg";
+    return "https://randomuser.me/api/portraits/women/1.jpg";
   };
 
   const indexOfLastOrder = currentPage * ordersPerPage;
@@ -221,7 +261,6 @@ const Orders = ({ token }) => {
             <option value="Out for delivery">Out for delivery</option>
             <option value="Delivered">Delivered</option>
           </select>
-
           <input
             type="text"
             placeholder="Search name/phone"
@@ -229,6 +268,133 @@ const Orders = ({ token }) => {
             onChange={(e) => setFilters({ ...filters, search: e.target.value })}
             className="border px-2 py-1 rounded shadow-sm"
           />
+        </div>
+      </div>
+
+      {/* 🔥 Enhanced Analytics Section */}
+      <div className="grid md:grid-cols-1 xl:grid-cols-1 gap-6 mb-20">
+       
+        {/* 📅 Ultra Enhanced Monthly Revenue Breakdown */}
+        <div className="bg-white rounded-2xl p-6 shadow-xl border border-blue-300 hover:shadow-2xl transition-all duration-300 xl:col-span-1">
+          <h3 className="text-2xl font-bold text-blue-800 mb-6 flex items-center gap-2">
+            📅 Monthly Revenue
+          </h3>
+
+          <div className="space-y-3 max-h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-300 text-sm pr-2">
+            {monthlyRevenueData.map((item, idx) => {
+              const prev = monthlyRevenueData[idx - 1]?.revenue || item.revenue;
+              const change = item.revenue - prev;
+              const percentage = ((change / prev) * 100).toFixed(1);
+
+              let changeColor = "text-gray-500";
+              let badge = "–";
+              if (change > 0) {
+                changeColor = "text-green-600";
+                badge = `▲ +${percentage}%`;
+              } else if (change < 0) {
+                changeColor = "text-red-500";
+                badge = `▼ ${percentage}%`;
+              }
+
+              const isCurrentMonth =
+                item.month ===
+                new Date().toLocaleString("default", { month: "long" });
+
+              return (
+                <div
+                  key={idx}
+                  className={`flex justify-between items-center p-3 rounded-lg transition hover:bg-blue-50 ${
+                    isCurrentMonth
+                      ? "bg-blue-100 border border-blue-400"
+                      : "bg-gray-50"
+                  }`}
+                >
+                  <div>
+                    <p className="text-gray-700 font-medium">{item.month}</p>
+                    <p className={`text-xs font-semibold ${changeColor}`}>
+                      {badge}
+                    </p>
+                  </div>
+
+                  <div className="text-right">
+                    <p className="text-green-700 font-bold">
+                      {currency}
+                      {item.revenue.toLocaleString()}
+                    </p>
+                    <div className="h-1 w-24 bg-blue-100 rounded overflow-hidden mt-1">
+                      <div
+                        className="h-full bg-green-500 transition-all duration-700"
+                        style={{
+                          width: `${Math.min(item.revenue / 1000, 100)}%`,
+                        }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* 👥 Unique Users */}
+        <div className="bg-white rounded-2xl p-6 shadow-lg border border-blue-300 hover:shadow-xl transition-shadow duration-300">
+          <h3 className="text-xl font-bold text-blue-800 mb-4 flex items-center gap-2">
+            👥 Total Unique      Users:{" "}
+            <span className="text-green-700">{uniqueUsers.length}</span>
+          </h3>
+          <div className="max-h-48 overflow-y-auto space-y-3 text-sm">
+            {uniqueUsers.map((user, i) => (
+              <div
+                key={i}
+                className="bg-gray-50 hover:bg-gray-100 p-2 rounded-lg transition"
+              >
+                <p className="font-semibold text-gray-800">{user.name}</p>
+                <p className="text-gray-500">
+                  {user.email} • {user.phone}
+                </p>
+                <p className="text-gray-400">
+                  {user.city}, {user.country}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* 🏆 Top 5 Selling Items */}
+        <div className="bg-white rounded-2xl p-6 shadow-lg border border-blue-300 hover:shadow-xl transition-shadow duration-300">
+          <h3 className="text-xl font-bold text-blue-800 mb-4 flex items-center gap-2">
+             Top 5 Selling Items
+          </h3>
+          <div className="space-y-3 max-h-48 overflow-y-auto text-sm">
+            {topSellingItems.map((item, idx) => (
+              <div
+                key={idx}
+                className="bg-green-50 hover:bg-green-100 p-2 rounded-lg transition"
+              >
+                <div className="flex justify-between">
+                  <div>
+                    <p className="font-semibold text-gray-700">
+                      {item.name}{" "}
+                      <span className="text-xs text-gray-500">
+                        ({item.size})
+                      </span>
+                    </p>
+                    <p className="text-gray-600 text-xs mt-1">
+                      Qty: <span className="font-medium">{item.quantity}</span>{" "}
+                      • Revenue:{" "}
+                      <span className="text-green-700 font-semibold">
+                        {currency}
+                        {item.revenue.toFixed(2)}
+                      </span>
+                    </p>
+                  </div>
+                  <div className="text-sm text-gray-500 font-semibold">
+                    #{idx + 1}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -600,20 +766,91 @@ const Orders = ({ token }) => {
       </div>
 
       {/* Pagination */}
-      <div className="flex justify-center mt-8 space-x-2">
-        {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
-          <button
-            key={pageNum}
-            onClick={() => setCurrentPage(pageNum)}
-            className={`px-4 py-1 rounded border font-medium transition ${
-              pageNum === currentPage
-                ? "bg-blue-600 text-white"
-                : "bg-white text-gray-700 border-gray-300 hover:bg-blue-50"
-            }`}
-          >
-            {pageNum}
-          </button>
-        ))}
+      <div className="flex flex-wrap justify-center items-center gap-2 mt-8 text-sm font-medium px-2">
+        {/* First & Prev */}
+        <button
+          onClick={() => setCurrentPage(1)}
+          disabled={currentPage === 1}
+          className={`min-w-[60px] px-3 py-2 rounded-lg border border-gray-300 shadow-sm transition duration-150 text-center ${
+            currentPage === 1
+              ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+              : "bg-white hover:bg-blue-100 text-blue-600"
+          }`}
+        >
+          First
+        </button>
+        <button
+          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+          disabled={currentPage === 1}
+          className={`min-w-[60px] px-3 py-2 rounded-lg border border-gray-300 shadow-sm transition duration-150 text-center ${
+            currentPage === 1
+              ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+              : "bg-white hover:bg-blue-100 text-blue-600"
+          }`}
+        >
+          Prev
+        </button>
+
+        {/* Page Numbers */}
+        {Array.from({ length: totalPages }, (_, i) => i + 1)
+          .filter(
+            (pageNum) =>
+              pageNum === 1 ||
+              pageNum === totalPages ||
+              (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
+          )
+          .reduce((acc, pageNum, index, arr) => {
+            if (index > 0 && pageNum - arr[index - 1] > 1) {
+              acc.push("...");
+            }
+            acc.push(pageNum);
+            return acc;
+          }, [])
+          .map((item, idx) =>
+            item === "..." ? (
+              <span key={idx} className="px-2 text-gray-400 text-lg">
+                ...
+              </span>
+            ) : (
+              <button
+                key={item}
+                onClick={() => setCurrentPage(item)}
+                className={`min-w-[40px] px-3 py-2 rounded-lg border border-gray-300 transition duration-150 text-center ${
+                  item === currentPage
+                    ? "bg-blue-600 text-white font-semibold shadow"
+                    : "bg-white hover:bg-blue-100 text-gray-700"
+                }`}
+              >
+                {item}
+              </button>
+            )
+          )}
+
+        {/* Next & Last */}
+        <button
+          onClick={() =>
+            setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+          }
+          disabled={currentPage === totalPages}
+          className={`min-w-[60px] px-3 py-2 rounded-lg border border-gray-300 shadow-sm transition duration-150 text-center ${
+            currentPage === totalPages
+              ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+              : "bg-white hover:bg-blue-100 text-blue-600"
+          }`}
+        >
+          Next
+        </button>
+        <button
+          onClick={() => setCurrentPage(totalPages)}
+          disabled={currentPage === totalPages}
+          className={`min-w-[60px] px-3 py-2 rounded-lg border border-gray-300 shadow-sm transition duration-150 text-center ${
+            currentPage === totalPages
+              ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+              : "bg-white hover:bg-blue-100 text-blue-600"
+          }`}
+        >
+          Last
+        </button>
       </div>
     </div>
   );

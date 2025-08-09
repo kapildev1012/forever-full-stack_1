@@ -8,11 +8,15 @@ const Footer = () => {
         {/* Logo & Description */}
         <div>
           <img src={assets.logo} alt="Zippin Logo" className="w-28 mb-4" />
-          <p className="text-sm text-gray-600 leading-relaxed max-w-md">
-            Welcome to <strong>Zippin</strong>, your ultimate online shopping
-            destination for everything you need! From fashion and electronics to
-            home goods and beauty essentials, we deliver value, variety, and
-            great service.
+          <p className="text-black text-base sm:text-lg md:text-xl leading-relaxed max-w-2xl mb-6">
+            Hey <strong className="text-yellow-400 font-semibold">User</strong>
+            , welcome to the world of{" "}
+            <span className="text-pink-400 font-semibold">Suraj Sweets</span> —
+            where every bite tells a story! From delicious handcrafted desserts
+            and iconic traditional sweets to modern flavors that melt in your
+            mouth, our chain brings together freshness, quality, and pure joy.
+            Let’s build something delightful together — one sweet moment at a
+            time .
           </p>
         </div>
 
@@ -47,15 +51,15 @@ const Footer = () => {
         <div>
           <h2 className="text-lg font-semibold mb-4">Get in Touch</h2>
           <ul className="space-y-2 text-sm text-gray-600">
-            <li>📞 838-456-7890</li>
-            <li>📧 zippin@you.com</li>
+            <li>📞 98179 04444</li>
+            <li>📧 Suraj@you.com</li>
           </ul>
         </div>
       </div>
 
       {/* Divider & Copyright */}
       <div className="mt-12 border-t pt-6 text-center text-xs text-gray-500">
-        © 2024 Zippin.com — All rights reserved.
+        © 2024 Suraj.com — All rights reserved.
       </div>
     </footer>
   );

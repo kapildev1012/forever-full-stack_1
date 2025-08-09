@@ -13,7 +13,7 @@ const owners = [
 
 const OurPolicy = () => {
   return (
-    <div className="bg-gradient-to-b from-white to-gray-100 text-gray-800 py-10 px-4 sm:px-2 lg:px-24">
+    <div className="bg-gradient-to-b from-white  text-gray-100 py-10 px-4 sm:px-2 lg:px-24">
       <div className="max-w-5xl mx-auto text-center mb-6">
         <h2 className="text-4xl font-extrabold text-green-700 mb-3">
           Meet Our Founder
@@ -29,7 +29,7 @@ const OurPolicy = () => {
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
         viewport={{ once: true }}
-        className="max-w-4xl mx-auto bg-white border border-gray-200 rounded-3xl shadow-xl p-6 sm:p-8"
+        className="max-w-4xl mx-auto bg-white  rounded-3xl shadow-xl p-6 sm:p-8"
       >
         <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
           {owners.map((owner, index) => (
@@ -56,7 +56,7 @@ const OurPolicy = () => {
                 {owner.about}
               </p>
 
-              <div className="flex gap-4 mt-3 text-gray-400 text-lg">
+              <div className="flex gap-4 mt-3 text-gray-100 text-lg">
                 <a href="#" className="hover:text-green-500 transition">
                   <i className="fab fa-linkedin-in" />
                 </a>

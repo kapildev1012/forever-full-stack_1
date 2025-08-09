@@ -40,27 +40,30 @@ const Hero = () => {
           transition={{ duration: 1.2, ease: "easeOut", delay: 0.3 }}
           className="w-full md:w-1/2 text-center md:text-left"
         >
-          <p className="text-green-400 text-xs uppercase tracking-wider mb-3">
-            ZIPPIN EXCLUSIVE
+          <p className="text-white text-xs sm:text-sm uppercase tracking-widest mb-4">
+            Multicuisine restaurant & sweetshop for quick service meals.
           </p>
 
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 leading-snug bg-gradient-to-r from-green-400 to-blue-500 text-transparent bg-clip-text drop-shadow-md">
-            Step Into the Future of Fashion
+          <h1 className="text-2xl sm:text-3xl md:text-4xl uppercase font-bold mb-4 leading-snug bg-gradient-to-r from-green-400 to-blue-500 text-transparent bg-clip-text drop-shadow-md">
+            Suraj Sweets - Bakers & Restaurant
           </h1>
 
-          <p className="text-white/80 text-sm sm:text-base mb-6 max-w-md mx-auto md:mx-0">
-            Next-gen fashion meets smart transitions. Minimal design. Mobile
-            optimized.
+          <p className="text-white/90 text-sm sm:text-base md:text-lg mb-8 max-w-xl mx-auto md:mx-0 leading-relaxed">
+            Made with love and legacy. From
+            golden laddus to creamy rasmalai — sweet memories await every bite.
           </p>
-
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={handleNavigate}
-            className="px-5 py-2.5 text-sm bg-gradient-to-br from-green-700 to-green-500 text-black font-semibold rounded-lg shadow-md hover:from-green-500 hover:to-blue-600 transition-all"
-          >
-            Explore Collection
-          </motion.button>
+          <div className="flex justify-center md:justify-start flex-wrap gap-4 mb-6 text-sm">
+            <div className="bg-green-600/20 px-4 py-2 rounded-full font-semibold text-green-300 shadow">
+              4.2 ★{"  "}
+              <span className="text-gray-300 font-normal">
+                6,264 Deliveries
+              </span>
+            </div>
+            <div className="bg-yellow-500/20 px-4 py-2 rounded-full font-semibold text-yellow-400 shadow">
+              4.5 ★ <span className="text-gray-300 font-normal"> Dine-ins</span>
+            </div>
+          </div>
+        
         </motion.div>
 
         {/* Image Section */}

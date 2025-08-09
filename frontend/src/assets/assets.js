@@ -53,6 +53,19 @@ import p_img6 from './p_img6.png'
 import p_img7 from './p_img7.png'
 import p_img8 from './p_img8.png'
 import p_img9 from './p_img9.png'
+import soups from "../assets/Soups.jpg";
+import starters from "../assets/Starters.jpg";
+import mainCourse from "../assets/MainCourse.jpg";
+import breads from "../assets/Breads.jpg";
+import riceandBiryani from "../assets/RiceandBiryani.jpg";
+import southIndian from "../assets/SouthIndian.jpg";
+import chinese from "../assets/Chinese.jpg";
+import pizzaandPasta from "../assets/PizzaandPasta.jpg";
+import burgersandSandwiches from "../assets/BurgersandSandwiches.jpg";
+import snacksandChaat from "../assets/SnacksandChaat.jpg";
+import momos from "../assets/Momos.jpg";
+import desserts from "../assets/Desserts.jpg";
+import drinks from "../assets/Drinks.jpg";
 
 
 import about_img from './about_img.png'
@@ -98,7 +111,20 @@ export const assets = {
     razorpay_logo,
     stripe_logo,
     cross_icon,
-    empty_cart
+    empty_cart,
+    soups,
+    starters,
+    mainCourse,
+    breads,
+    riceandBiryani,
+    southIndian,
+    chinese,
+    pizzaandPasta,
+    burgersandSandwiches,
+    snacksandChaat,
+    momos,
+    desserts,
+    drinks,
 }
 
 

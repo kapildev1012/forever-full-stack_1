@@ -6,6 +6,7 @@ import { ShopContext } from "../context/ShopContext";
 import { motion } from "framer-motion";
 import { FaSlidersH } from "react-icons/fa";
 import { FiRotateCcw } from "react-icons/fi";
+
 const Collection = () => {
   const { products, search, showSearch } = useContext(ShopContext);
   const [showFilter, setShowFilter] = useState(false);
@@ -33,229 +34,207 @@ const Collection = () => {
     else if (sortType === "high-low") sorted.sort((a, b) => b.price - a.price);
     return sorted;
   };
+useEffect(() => {
+  let filtered = [...products];
 
-  useEffect(() => {
-    let filtered = [...products];
+  if (showSearch && search) {
+    filtered = filtered.filter((item) =>
+      item.name?.toLowerCase().includes(search.toLowerCase())
+    );
+  }
 
-    if (showSearch && search) {
-      filtered = filtered.filter((item) =>
-        item.name?.toLowerCase().includes(search.toLowerCase())
-      );
-    }
+  if (subCategory.length > 0) {
+    filtered = filtered.filter((item) =>
+      subCategory.includes(item.subCategory)
+    );
+  }
 
-    if (category.length > 0) {
-      filtered = filtered.filter((item) => category.includes(item.category));
-    }
+  filtered = filtered.filter((item) => {
+    const price = Number(item.price) || 0;
+    const stars = Number(item.rating) || 0;
+    const available = item.available !== false;
 
-    if (subCategory.length > 0) {
-      filtered = filtered.filter((item) =>
-        subCategory.includes(item.subCategory)
-      );
-    }
+    return (
+      price >= minPrice &&
+      price <= maxPrice &&
+      (availability === "" || available === (availability === "in")) &&
+      (rating === null || stars >= rating)
+    );
+  });
 
-    filtered = filtered.filter((item) => {
-      const price = Number(item.price) || 0;
-      const stars = Number(item.rating) || 0;
-      const available = item.available !== false;
-      return (
-        price >= minPrice &&
-        price <= maxPrice &&
-        (availability === "" || available === (availability === "in")) &&
-        (rating === null || stars >= rating)
-      );
-    });
+  setFilterProducts(sortProduct(filtered));
+}, [
+  products,
+  search,
+  showSearch,
+  subCategory,
+  minPrice,
+  maxPrice,
+  availability,
+  rating,
+  sortType,
+]);
 
-    setFilterProducts(sortProduct(filtered));
-  }, [
-    products,
-    search,
-    showSearch,
-    category,
-    subCategory,
-    minPrice,
-    maxPrice,
-    availability,
-    rating,
-    sortType,
-  ]);
+return (
+  <div className="flex flex-col sm:flex-row gap-4 pt-4 bg-gray-00 min-h-screen px-4 relative">
+    {showFilter && (
+      <div
+        className="fixed inset-0 top-16 bg-black bg-opacity-40 z-40 sm:hidden"
+        onClick={() => setShowFilter(false)}
+      />
+    )}
 
-  return (
-    <div className="flex flex-col sm:flex-row gap-1 pt-1 border-t bg-gray-90 min-h-screen px-4 relative overflow-x-hidden">
-      {/* Overlay behind filter panel */}
-      {showFilter && (
-        <div
-          className="fixed top-16 left-0 right-0 bottom-0 bg-black bg-opacity-40 z-40 sm:hidden"
-          onClick={() => setShowFilter(false)}
-        />
-      )}
-
-      {/* Mobile filter toggle and reset */}
-      <div className="block sm:hidden flex items-center justify-between gap-3 mt-4 mb-5 px-1 z-10">
-        <button
-          onClick={() => setShowFilter(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-700 via-gray-900 to-red-700 text-white text-base font-semibold rounded-xl shadow-md hover:scale-105 hover:shadow-lg active:scale-95 transition-all duration-200"
-        >
-          <motion.span
-            transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
-            className="text-white"
+    {/* Mobile Filter Controls */}
+    <div className="block sm:hidden mt-6 mb-4 px-1 z-20">
+      <div className="flex gap-3 justify-between flex-wrap">
+        {/* Apply Filters */}
+        <div className="flex items-center justify-between bg-purple-50 border border-purple-200 rounded-xl p-2 shadow-md flex-1 min-w-[48%]">
+          <div className="flex items-center gap-2">
+            <FaSlidersH className="text-purple-600 text-lg" />
+            <div className="leading-tight">
+              <p className="text-sm font-semibold text-purple-800">
+                Apply Filters
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => setShowFilter(true)}
+            className="ml-2 px-4 py-1 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-full font-medium text-xs shadow hover:from-purple-700 hover:to-indigo-700 transition-all"
           >
-            <FaSlidersH />
-          </motion.span>
-          Show Filters
-        </button>
+            Open
+          </button>
+        </div>
 
+        {/* Reset Filters */}
+        <div className="flex items-center justify-between bg-red-50 border border-red-200 rounded-xl p-2 shadow-md flex-1 min-w-[48%]">
+          <div className="flex items-center gap-2">
+            <FiRotateCcw className="text-red-600 text-lg" />
+            <div className="leading-tight">
+              <p className="text-sm font-semibold text-red-800">
+                Reset Filters
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={clearFilters}
+            className="ml-2 px-4 py-1 bg-gradient-to-r from-red-600 to-pink-500 text-white rounded-full font-medium text-xs shadow hover:from-red-700 hover:to-pink-600 transition-all"
+          >
+            Reset
+          </button>
+        </div>
+      </div>
+    </div>
+
+   <aside
+      className={`bg-white shadow-lg rounded-none sm:rounded-xl p-4 transition-all duration-300 z-[999]
+    ${
+      showFilter
+        ? "fixed inset-0 top-0 left-0 w-full h-full overflow-y-auto sm:static sm:w-64"
+        : "hidden sm:block sm:w-64"
+    }
+  `}
+    >
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-lg font-bold text-gray-700">Filters</h2>
         <button
-          onClick={clearFilters}
-          aria-label="Reset all filters"
-          className="xflex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-700 via-gray-900 to-red-700 text-white text-base font-semibold rounded-xl shadow-md hover:scale-105 hover:shadow-lg active:scale-95 transition-all duration-200"
+          onClick={() => {
+            
+            setShowFilter(false);
+          }}
+          className="text-sm text-red-500 hover:underline sm:hidden"
         >
-          {/* Background animation */}
-          <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-red-700 via-gray-900 to-red-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-sm"></span>
-          <span className="absolute inset-0 w-full h-full bg-gray-00 opacity-0 group-hover:opacity-70 transition-opacity duration-500 rounded-full"></span>
-
-          {/* Button content */}
-          <span className="relative z-10 flex items-center gap-2">
-            <FiRotateCcw className="text-base" />
-            Reset Filters
-          </span>
-
-          {/* Glow ring */}
-          <span className="absolute inset-0 border border-white/10 rounded-full opacity-0 group-hover:opacity-100 transition duration-500 animate-pulse"></span>
+          Close
         </button>
       </div>
 
-      {/* Filter Sidebar */}
-      <aside
-        className={`bg-white shadow-md p-5 rounded-lg transition-all duration-300
-        ${
-          showFilter
-            ? "fixed top-16 left-0 w-4/5 h-[calc(100%-4rem)] overflow-y-auto z-50"
-            : "hidden sm:block sm:w-64"
-        } sm:static sm:z-auto`}
-      >
-        <div className="flex justify-between items-center sm:hidden mb-4">
-          <h2 className="text-lg font-bold">Filters</h2>
-          <button
-            onClick={() => setShowFilter(false)}
-            className="text-red-500 text-sm font-semibold"
-          >
-            ✕ Close
-          </button>
-        </div>
+      <SubCategoryFilter
+        subCategory={subCategory}
+        setSubCategory={setSubCategory}
+      />
+      <PriceRange
+        min={minPrice}
+        max={maxPrice}
+        setMin={setMinPrice}
+        setMax={setMaxPrice}
+      />
+      <Availability value={availability} setValue={setAvailability} />
+      <RatingSelector rating={rating} setRating={setRating} />
+    </aside>
 
-        <div className="hidden sm:flex justify-between items-center mb-6">
-          <h2 className="text-xl font-bold text-gray-800">Filters</h2>
-          <button
-            onClick={clearFilters}
-            className="text-sm text-red-600 hover:underline"
-          >
-            Clear All
-          </button>
-        </div>
+    <main className="flex-1">
+      <div className="flex justify-between items-center mb-4 flex-wrap gap-3">
+        <p className="text-sm text-gray-600">
+          Showing <strong>{filterProducts.length}</strong> products
+        </p>
+        <select
+          onChange={(e) => setSortType(e.target.value)}
+          className="border border-gray-400 px-3 py-2 rounded-md text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-purple-500"
+        >
+          <option value="relavent">Sort by: Relevant</option>
+          <option value="low-high">Price: Low to High</option>
+          <option value="high-low">Price: High to Low</option>
+        </select>
+      </div>
 
-        <SubCategoryFilter
-          subCategory={subCategory}
-          setSubCategory={setSubCategory}
-        />
-        <PriceRange
-          min={minPrice}
-          max={maxPrice}
-          setMin={setMinPrice}
-          setMax={setMaxPrice}
-        />
-        <Availability value={availability} setValue={setAvailability} />
-        <RatingSelector rating={rating} setRating={setRating} />
-      </aside>
-
-      {/* Product Grid */}
-      <main className="flex-1">
-        <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
-          <Title text1="ALL" text2="COLLECTIONS" />
-          <div className="flex items-center gap-4">
-            <p className="text-sm text-gray-500">
-              Showing <strong>{filterProducts.length}</strong> products
-            </p>
-            <select
-              onChange={(e) => setSortType(e.target.value)}
-              className="border border-gray-500 px-3 py-1.5 rounded text-sm shadow-sm"
-            >
-              <option value="relavent">Sort by: Relevant</option>
-              <option value="low-high">Low to High</option>
-              <option value="high-low">High to Low</option>
-            </select>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {filterProducts.length > 0 ? (
-            filterProducts.map((item, index) => (
-              <ProductItem
-                key={index}
-                name={item.name || "No Name"}
-                id={item._id || index}
-                price={item.price || 0}
-                image={item.image || assets.placeholder}
-                rating={item.rating || 0}
-                quantity={item.quantity || 0}
-                subCategory={item.subCategory || ""}
-              />
-            ))
-          ) : (
-            <p className="text-center col-span-full text-gray-500">
-              No products found
-            </p>
-          )}
-        </div>
-      </main>
-    </div>
-  );
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
+        {filterProducts.length > 0 ? (
+          filterProducts.map((item, index) => (
+            <ProductItem
+              key={index}
+              name={item.name || "No Name"}
+              id={item._id || index}
+              price={item.price || 0}
+              image={item.image || assets.placeholder}
+              rating={item.rating || 0}
+              quantity={item.quantity || 0}
+              subCategory={item.subCategory || ""}
+            />
+          ))
+        ) : (
+          <p className="text-center col-span-full text-gray-500 text-sm">
+            No products found
+          </p>
+        )}
+      </div>
+    </main>
+  </div>
+);
 };
 
-// Filters
 const SubCategoryFilter = ({ subCategory, setSubCategory }) => {
   const groupedSubcategories = {
-    "Beauty & Personal Care": [
-      "Skin Care",
-      "Hair Care",
-      "Makeup",
-      "Fragrances",
-      "Bath & Body",
-      "Men's Grooming",
+    Sweets: ["Dry Sweets", "Bengali Sweets", "Milk Sweets", "Laddu", "Barfi"],
+    Namkeen: ["Sev", "Mixture", "Chakli", "Chivda"],
+    Snacks: ["Samosa", "Kachori", "Pakoda"],
+    Beverages: ["Lassi", "Chaas", "Milkshake", "Soft Drinks"],
+    Bakery: ["Cake", "Pastry", "Cookies", "Toast"],
+    "Soups & Starters": ["Soups", "Starters"],
+    "Main Course": ["Paneer", "Dal", "Veg Curries", "Kofta", "Thali"],
+    Breads: ["Roti", "Naan", "Paratha", "Kulcha"],
+    "Rice and Biryani": ["Veg Biryani", "Jeera Rice", "Plain Rice", "Pulao"],
+    "South Indian": ["Dosa", "Idli", "Vada", "Uttapam"],
+    Chinese: ["Manchurian", "Chowmein", "Chilli Paneer"],
+    "Fried Rice and Noodles": [
+      "Veg Fried Rice",
+      "Hakka Noodles",
+      "Schezwan Rice",
     ],
-    Fashion: [
-      "Men's Clothing",
-      "Women's Clothing",
-      "Footwear",
-      "Accessories",
-      "Bags & Wallets",
+    "Pizza and Pasta": [
+      "Veg Pizza",
+      "Cheese Pizza",
+      "White Sauce Pasta",
+      "Red Sauce Pasta",
     ],
-    Electronics: [
-      "Mobile Phones",
-      "Laptops & Accessories",
-      "Audio Devices",
-      "Smart Wearables",
-      "Cameras",
+    "Burgers and Sandwiches": [
+      "Veg Burger",
+      "Grilled Sandwich",
+      "Club Sandwich",
     ],
-    Appliances: [
-      "Kitchen Appliances",
-      "Home Appliances",
-      "Personal Care Appliances",
-      "Large Appliances",
-    ],
-    Grocery: [
-      "Dairy & Eggs",
-      "Beverages",
-      "Snacks & Instant Food",
-      "Staples",
-      "Spices & Condiments",
-    ],
-    "Sports, Books & More": ["Sports Equipment", "Fitness & Gym", "Books"],
-    "Home & Furniture": [
-      "Furniture",
-      "Home Decor",
-      "Kitchen & Dining",
-      "Lighting",
-    ],
+    "Snacks and Chaat": ["Pani Puri", "Bhel", "Dahi Puri", "Sev Puri"],
+    Momos: ["Steamed", "Fried", "Tandoori"],
+    Accompaniments: ["Raita", "Salad", "Papad"],
+    Desserts: ["Gulab Jamun", "Rasgulla", "Ice Cream", "Halwa"],
+    "Drinks (Beverages)": ["Juice", "Cold Drink", "Shakes", "Mocktails"],
   };
 
   const handleSelect = (value, categoryName) => {
@@ -277,17 +256,17 @@ const SubCategoryFilter = ({ subCategory, setSubCategory }) => {
 
   return (
     <div className="mb-6">
-      <p className="text-m font-semibold text-purple-800 mb-5">Categories</p>
+      <p className="text-sm font-semibold text-gray-700 mb-2">Categories</p>
       <div className="flex flex-col gap-4">
         {Object.entries(groupedSubcategories).map(([category, subs]) => (
-          <div key={category} className="relative z-10">
-            <label className="text-sm font-medium text-gray-800 mb-2 block">
+          <div key={category}>
+            <label className="block text-xs font-medium text-gray-600 mb-1">
               {category}
             </label>
             <select
               value={subs.find((sub) => subCategory.includes(sub)) || ""}
               onChange={(e) => handleSelect(e.target.value, category)}
-              className="w-full border border-gray-300 px-2 py-2 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 text-m"
+              className="w-full border border-gray-300 px-2 py-2 rounded-lg text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-purple-500"
             >
               <option value="">Select Subcategory</option>
               {subs.map((sub) => (
@@ -304,31 +283,54 @@ const SubCategoryFilter = ({ subCategory, setSubCategory }) => {
 };
 
 const PriceRange = ({ min, max, setMin, setMax }) => (
-  <div className="mb-8">
-    <p className="text-md font-semibold text-purple-800 mb-3">Price Range</p>
-    <div className="flex gap-4 text-sm">
-      <input
-        type="number"
-        value={min}
-        onChange={(e) => setMin(Number(e.target.value) || "")}
-        placeholder="Min"
-        className="border border-gray-300 px-2 py-1 w-24 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-      />
-      <input
-        type="number"
-        value={max}
-        onChange={(e) => setMax(Number(e.target.value) || 10000)}
-        placeholder="Max"
-        className="border border-gray-300 px-2 py-1 w-24 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-      />
+  <div className="mb-6 w-full">
+    <p className="text-sm font-semibold text-gray-700 mb-2">Price Range</p>
+
+    <div className="flex gap-3 text-sm w-full flex-wrap">
+      {/* Min Price Input */}
+      <div className="relative w-[45%] min-w-[120px]">
+        <span className="absolute left-3 top-2 text-gray-400">₹</span>
+        <input
+          type="number"
+          value={min}
+          onChange={(e) => {
+            const val = Number(e.target.value);
+            setMin(val >= 0 ? val : 0);
+          }}
+          placeholder="Min"
+          className="pl-6 pr-2 py-1 border border-gray-300 rounded-md w-full shadow-sm focus:outline-none focus:ring-1 focus:ring-purple-500"
+        />
+      </div>
+
+      {/* Max Price Input */}
+      <div className="relative w-[45%] min-w-[120px]">
+        <span className="absolute left-3 top-2 text-gray-400">₹</span>
+        <input
+          type="number"
+          value={max === Infinity ? "" : max}
+          onChange={(e) => {
+            const val = e.target.value;
+            setMax(val === "" ? Infinity : Number(val));
+          }}
+          placeholder="Max"
+          className="pl-6 pr-2 py-1 border border-gray-300 rounded-md w-full shadow-sm focus:outline-none focus:ring-1 focus:ring-purple-500"
+        />
+      </div>
     </div>
+
+    {/* Live Preview */}
+    <p className="text-xs text-gray-500 mt-2">
+      Selected: ₹{min || 0} –{" "}
+      {max === Infinity || !max ? "Unlimited" : `₹${max}`}
+    </p>
   </div>
 );
 
+
 const Availability = ({ value, setValue }) => (
   <div className="mb-6">
-    <p className="text-md font-semibold text-purple-800 mb-2">Availability</p>
-    <div className="flex flex-col text-sm text-gray-700">
+    <p className="text-sm font-semibold text-gray-700 mb-2">Availability</p>
+    <div className="flex flex-col text-sm text-gray-700 gap-1">
       {[
         { label: "In Stock", val: "in" },
         { label: "Out of Stock", val: "out" },
@@ -348,17 +350,13 @@ const Availability = ({ value, setValue }) => (
 );
 
 const RatingSelector = ({ rating, setRating }) => (
-  <div className="mb-6">
-    <p className="text-md font-semibold text-purple-800 mb-1">
-  
-    </p>
+  <div className="mb-9 pt-2 py-20">
+    <p className="text-sm font-semibold text-gray-700 mb-2">Rating</p>
     <p className="text-xs text-gray-500 mb-2 italic">
-      {rating
-        ? `Showing products rated ${rating}★ & above`
-        : "Showing all ratings"}
+      {rating ? `Rated ${rating} ★ & above` : "All ratings"}
     </p>
-    <div className="flex flex-col gap-1 text-sm text-gray-700">
-      {[].map((star) => (
+    <div className="flex flex-col gap-2 text-sm">
+      {[5, 4, 3, 2, 1].map((star) => (
         <label key={star} className="flex items-center gap-2 cursor-pointer">
           <input
             type="checkbox"
@@ -376,8 +374,8 @@ const RatingSelector = ({ rating, setRating }) => (
               >
                 ★
               </span>
-            ))}
-            & {star} & above
+            ))}{" "}
+            & Up
           </span>
         </label>
       ))}

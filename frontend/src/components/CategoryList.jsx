@@ -1,23 +1,44 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-// Local images from /assets
-import beauty from "../assets/beauty.jpg";
-import fashion from "../assets/fashion.jpg";
-import electronics from "../assets/electronics.jpg";
-import appliances from "../assets/appliances.jpg";
-import grocery from "../assets/grocery.jpg";
-import sports from "../assets/sports.jpg";
-import home from "../assets/home.jpg";
+import soups from "../assets/Soups.jpg";
+import starters from "../assets/Starters.jpg";
+import mainCourse from "../assets/MainCourse.jpg";
+import breads from "../assets/Breads.jpg";
+import riceandBiryani from "../assets/RiceandBiryani.jpg";
+import southIndian from "../assets/SouthIndian.jpg";
+import chinese from "../assets/Chinese.jpg";
+import pizzaandPasta from "../assets/PizzaandPasta.jpg";
+import burgersandSandwiches from "../assets/BurgersandSandwiches.jpg";
+import snacksandChaat from "../assets/SnacksandChaat.jpg";
+import momos from "../assets/Momos.jpg";
+import desserts from "../assets/Desserts.jpg";
+import drinks from "../assets/Drinks.jpg";
 
 const categories = [
-  { name: "Beauty & Personal Care", image: beauty },
-  { name: "Fashion", image: fashion },
-  { name: "Electronics", image: electronics },
-  { name: "Appliances", image: appliances },
-  { name: "Grocery", image: grocery },
-  { name: "Sports, Books & More", image: sports },
-  { name: "Home & Furniture", image: home },
+  { name: "Soups", image: soups },
+  { name: "Starters", image: starters },
+  { name: "Main Course", image: mainCourse },
+  { name: "Breads", image: breads },
+  { name: "Rice and Biryani", image: riceandBiryani },
+  { name: "South Indian", image: southIndian },
+  { name: "Chinese", image: chinese },
+  { name: "Pizza and Pasta", image: pizzaandPasta },
+  { name: "Burgers and Sandwiches", image: burgersandSandwiches },
+  { name: "Snacks and Chaat", image: snacksandChaat },
+  { name: "Momos", image: momos },
+  { name: "Desserts", image: desserts },
+  { name: "Drinks", image: drinks },
+];
+
+const glowColors = [
+  "from-pink-500 to-red-400",
+  "from-yellow-400 to-orange-500",
+  "from-green-400 to-emerald-500",
+  "from-blue-400 to-indigo-500",
+  "from-purple-400 to-fuchsia-500",
+  "from-teal-400 to-cyan-500",
+  "from-rose-400 to-pink-500",
 ];
 
 const CategoryList = () => {
@@ -30,46 +51,44 @@ const CategoryList = () => {
   };
 
   return (
-    <section
-      className="relative mt-3 px-6 sm:px-10 md:px-16 lg:px-24 py-12 md:py-20 bg-gradient-to-br from-green-600 via-green-300 to-green-100 shadow-2xl rounded-3xl border border-emerald-300/40 backdrop-blur-md
-"
-    >
-      <h2 className="text-3xl font-bold mb-6 text-center text-purple-700">
-        Shop by <span className="text-gray-900">Category</span>
+    <section className="relative mt-10 px-4 sm:px-8 md:px-16 py-12 bg-gradient-to-br from-black via-zinc-800 to-black rounded-3xl shadow-2xl border border-white/10 backdrop-blur-md">
+      <h2 className="text-3xl sm:text-4xl font-bold text-center text-white mb-10 tracking-wide drop-shadow-lg">
+        Explore <span className="text-green-400">Menu Categories</span>
       </h2>
 
-      {/* Scrollable Row */}
-      <div className="flex overflow-x-auto gap-5 px-2 pb-4 scroll-smooth snap-x snap-mandatory no-scrollbar">
-        {categories.map((cat) => (
-          <div
-            key={cat.name}
-            onClick={() => handleCategoryClick(cat.name)}
-            title={cat.name}
-            className={`flex flex-col items-center justify-center min-w-[100px] sm:min-w-[120px] snap-center cursor-pointer group transition-all duration-300 ${
-              activeCategory === cat.name
-                ? "ring-2 ring-green-500 scale-105"
-                : ""
-            }`}
-          >
+      <div className="flex overflow-x-auto gap-6 px-2 pb-4 scroll-smooth snap-x snap-mandatory no-scrollbar">
+        {categories.map((cat, idx) => {
+          const gradient = glowColors[idx % glowColors.length];
+
+          return (
             <div
-              className={`w-[80px] h-[80px] sm:w-[100px] sm:h-[100px] rounded-full overflow-hidden shadow-md border-2 ${
-                activeCategory === cat.name
-                  ? "border-green-500 shadow-green-200"
-                  : "border-green-200"
-              } group-hover:scale-105 group-hover:shadow-xl transition-all duration-300`}
+              key={cat.name}
+              onClick={() => handleCategoryClick(cat.name)}
+              title={cat.name}
+              className={`flex flex-col items-center justify-center min-w-[90px] sm:min-w-[110px] snap-center cursor-pointer group transition-all duration-300 ease-in-out hover:scale-101 ${
+                activeCategory === cat.name ? "scale-110" : ""
+              }`}
             >
-              <img
-                src={cat.image}
-                alt={cat.name}
-                className="w-full h-full object-cover"
-                loading="lazy"
-              />
+              <div
+                className={`bg-gradient-to-br ${gradient} p-[3px] rounded-full shadow-lg transition-all duration-500`}
+              >
+                <div className="bg-black rounded-full w-[80px] h-[80px] sm:w-[100px] sm:h-[100px] overflow-hidden">
+                  <img
+                    src={cat.image}
+                    alt={cat.name}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    loading="lazy"
+                  />
+                </div>
+              </div>
+              <p
+                className={`mt-3 text-center text-sm sm:text-base text-white font-medium group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r ${gradient} transition-all duration-300 max-w-[110px] truncate`}
+              >
+                {cat.name}
+              </p>
             </div>
-            <p className="mt-2 text-center text-sm sm:text-base text-gray-800 group-hover:text-green-700 font-medium truncate max-w-[90px]">
-              {cat.name}
-            </p>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </section>
   );

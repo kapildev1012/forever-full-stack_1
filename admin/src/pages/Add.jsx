@@ -19,69 +19,157 @@ const Add = ({ token }) => {
   const [inStock, setInStock] = useState(true);
   const [sizes, setSizes] = useState([]);
 
-  const categoryMap = {
-    "Beauty & Personal Care": [
-      "Skin Care",
-      "Hair Care",
-      "Makeup",
-      "Fragrances",
-      "Bath & Body",
-      "Men's Grooming",
-    ],
-    Fashion: ["Men's Clothing", "Footwear"],
-    Electronics: ["Mobile Phones", "Laptops", "Accessories"],
-    Appliances: ["Washing Machines", "Refrigerators", "Microwaves"],
-    Grocery: ["Fruits", "Vegetables", "Snacks"],
-    "Sports, Books & More": ["Books", "Fitness Equipment", "Sportswear"],
-    "Home & Furniture": ["Furniture", "Home Decor", "Kitchen Essentials"],
-  };
+const categoryMap = {
+  Sweets: ["Dry Sweets", "Bengali Sweets", "Milk Sweets", "Laddu", "Barfi"],
+  Namkeen: ["Sev", "Mixture", "Chakli", "Chivda"],
+  Snacks: ["Samosa", "Kachori", "Pakoda"],
+  Beverages: ["Lassi", "Chaas", "Milkshake", "Soft Drinks"],
+  Bakery: ["Cake", "Pastry", "Cookies", "Toast"],
+  Soups: ["Veg Soup", "Tomato Soup", "Manchow Soup", "Sweet Corn Soup"],
+  Starters: ["Paneer Tikka", "Veg Platter", "Spring Rolls", "Tandoori Items"],
+  "Main Course": ["Paneer", "Dal", "Veg Curries", "Kofta", "Thali"],
+  Breads: ["Roti", "Naan", "Paratha", "Kulcha"],
+  "Rice and Biryani": ["Veg Biryani", "Jeera Rice", "Plain Rice", "Pulao"],
+  "South Indian": ["Dosa", "Idli", "Vada", "Uttapam"],
+  Chinese: ["Manchurian", "Chowmein", "Chilli Paneer"],
+  "Fried Rice and Noodles": [
+    "Veg Fried Rice",
+    "Hakka Noodles",
+    "Schezwan Rice",
+  ],
+  "Pizza and Pasta": [
+    "Veg Pizza",
+    "Cheese Pizza",
+    "White Sauce Pasta",
+    "Red Sauce Pasta",
+  ],
+  "Burgers and Sandwiches": ["Veg Burger", "Grilled Sandwich", "Club Sandwich"],
+  "Snacks and Chaat": ["Pani Puri", "Bhel", "Dahi Puri", "Sev Puri"],
+  Momos: ["Steamed", "Fried", "Tandoori"],
+  Accompaniments: ["Raita", "Salad", "Papad"],
+  Desserts: ["Gulab Jamun", "Rasgulla", "Ice Cream", "Halwa"],
+  "Drinks (Beverages)": ["Juice", "Cold Drink", "Shakes", "Mocktails"],
+};
 
-  const sizeMap = {
-    Fashion: {
-      "Men's Clothing": ["XS", "S", "M", "L", "XL", "XXL", "3XL", "4XL"],
-      Footwear: ["UK 6", "UK 7", "UK 8", "UK 9", "UK 10", "UK 11", "UK 12"],
-    },
-    Grocery: {
-      Fruits: ["500g", "1kg", "2kg"],
-      Vegetables: ["500g", "1kg", "2kg"],
-      Snacks: ["100g", "250g", "500g", "1kg"],
-    },
-    Electronics: {
-      "Mobile Phones": ["64GB", "128GB", "256GB", "512GB"],
-      Laptops: [
-        "8GB RAM",
-        "16GB RAM",
-        "32GB RAM",
-        "256GB SSD",
-        "512GB SSD",
-        "1TB SSD",
-      ],
-      Accessories: ["Small", "Medium", "Large"],
-    },
-    Appliances: {
-      "Washing Machines": ["6kg", "7kg", "8kg", "10kg"],
-      Refrigerators: ["180L", "250L", "350L", "500L"],
-      Microwaves: ["20L", "25L", "30L"],
-    },
-    "Beauty & Personal Care": {
-      "Skin Care": ["100ml", "250ml", "500ml"],
-      "Hair Care": ["100ml", "250ml", "500ml"],
-      Makeup: ["Small", "Medium", "Large"],
-      Fragrances: ["30ml", "50ml", "100ml"],
-      "Bath & Body": ["250ml", "500ml", "1L"],
-      "Men's Grooming": ["100ml", "250ml", "500ml"],
-    },
-    "Sports, Books & More": {
-      Books: ["Paperback", "Hardcover", "E-book"],
-      "Fitness Equipment": ["1kg", "2kg", "5kg", "10kg", "20kg"],
-      Sportswear: ["S", "M", "L", "XL", "XXL"],
-    },
-    "Home & Furniture": {
-      Furniture: ["Single", "Double", "Queen", "King"],
-      "Home Decor": ["Small", "Medium", "Large"],
-      "Kitchen Essentials": ["1pc", "3pcs", "5pcs", "10pcs"],
-    },
-  };
+
+const sizeMap = {
+  Sweets: {
+    "Dry Sweets": ["100g", "250g", "500g", "1kg"],
+    "Bengali Sweets": ["2pcs", "4pcs", "8pcs", "1kg"],
+    "Milk Sweets": ["100g", "250g", "500g", "1kg"],
+    Laddu: ["2pcs", "4pcs", "8pcs", "1kg"],
+    Barfi: ["100g", "250g", "500g", "1kg"],
+  },
+  Namkeen: {
+    Sev: ["100g", "250g", "500g", "1kg"],
+    Mixture: ["100g", "250g", "500g", "1kg"],
+    Chakli: ["2pcs", "4pcs", "8pcs", "1kg"],
+    Chivda: ["100g", "250g", "500g", "1kg"],
+  },
+  Snacks: {
+    Samosa: ["1pc", "2pcs", "4pcs", "8pcs"],
+    Kachori: ["1pc", "2pcs", "4pcs"],
+    Pakoda: ["100g", "250g", "500g"],
+  },
+  Beverages: {
+    Lassi: ["250ml", "500ml", "1L"],
+    Chaas: ["250ml", "500ml", "1L"],
+    Milkshake: ["250ml", "500ml", "1L"],
+    "Soft Drinks": ["200ml", "500ml", "1L", "2L"],
+  },
+  Bakery: {
+    Cake: ["0.5kg", "1kg", "2kg"],
+    Pastry: ["1pc", "2pcs", "4pcs"],
+    Cookies: ["100g", "250g", "500g"],
+    Toast: ["100g", "250g", "500g"],
+  },
+  Soups: {
+    "Veg Soup": ["Half", "Full"],
+    "Tomato Soup": ["Half", "Full"],
+    "Manchow Soup": ["Half", "Full"],
+    "Sweet Corn Soup": ["Half", "Full"],
+  },
+  Starters: {
+    "Paneer Tikka": ["Half", "Full"],
+    "Veg Platter": ["1 Plate", "2 Plate"],
+    "Spring Rolls": ["4pcs", "8pcs"],
+    "Tandoori Items": ["Half", "Full"],
+  },
+  "Main Course": {
+    Paneer: ["Half", "Full"],
+    Dal: ["Half", "Full"],
+    "Veg Curries": ["Half", "Full"],
+    Kofta: ["Half", "Full"],
+    Thali: ["Mini", "Regular", "Deluxe"],
+  },
+  Breads: {
+    Roti: ["1pc", "2pcs", "4pcs"],
+    Naan: ["1pc", "2pcs"],
+    Paratha: ["1pc", "2pcs"],
+    Kulcha: ["1pc", "2pcs"],
+  },
+  "Rice and Biryani": {
+    "Veg Biryani": ["Half", "Full"],
+    "Jeera Rice": ["Half", "Full"],
+    "Plain Rice": ["Half", "Full"],
+    Pulao: ["Half", "Full"],
+  },
+  "South Indian": {
+    Dosa: ["Plain", "Masala", "Cheese"],
+    Idli: ["2pcs", "4pcs", "6pcs"],
+    Vada: ["2pcs", "4pcs"],
+    Uttapam: ["Plain", "Veg", "Cheese"],
+  },
+  Chinese: {
+    Manchurian: ["Half", "Full"],
+    Chowmein: ["Half", "Full"],
+    "Chilli Paneer": ["Half", "Full"],
+  },
+  "Fried Rice and Noodles": {
+    "Veg Fried Rice": ["Half", "Full"],
+    "Hakka Noodles": ["Half", "Full"],
+    "Schezwan Rice": ["Half", "Full"],
+  },
+  "Pizza and Pasta": {
+    "Veg Pizza": ["Regular", "Medium", "Large"],
+    "Cheese Pizza": ["Regular", "Medium", "Large"],
+    "White Sauce Pasta": ["Half", "Full"],
+    "Red Sauce Pasta": ["Half", "Full"],
+  },
+  "Burgers and Sandwiches": {
+    "Veg Burger": ["Single", "Combo"],
+    "Grilled Sandwich": ["Single", "Combo"],
+    "Club Sandwich": ["Single", "Combo"],
+  },
+  "Snacks and Chaat": {
+    "Pani Puri": ["1 Plate", "2 Plate"],
+    Bhel: ["Half", "Full"],
+    "Dahi Puri": ["1 Plate"],
+    "Sev Puri": ["1 Plate"],
+  },
+  Momos: {
+    Steamed: ["6pcs", "8pcs", "12pcs"],
+    Fried: ["6pcs", "8pcs", "12pcs"],
+    Tandoori: ["6pcs", "8pcs", "12pcs"],
+  },
+  Accompaniments: {
+    Raita: ["Small", "Medium", "Large"],
+    Salad: ["Small", "Medium", "Large"],
+    Papad: ["1pc", "2pcs", "4pcs"],
+  },
+  Desserts: {
+    "Gulab Jamun": ["1pc", "2pcs", "4pcs"],
+    Rasgulla: ["1pc", "2pcs", "4pcs"],
+    "Ice Cream": ["Small", "Medium", "Large"],
+    Halwa: ["100g", "250g", "500g"],
+  },
+  "Drinks (Beverages)": {
+    Juice: ["250ml", "500ml", "1L"],
+    "Cold Drink": ["250ml", "500ml", "1L", "2L"],
+    Shakes: ["250ml", "500ml"],
+    Mocktails: ["Glass", "Jug"],
+  },
+};
 
   const onSubmitHandler = async (e) => {
     e.preventDefault();
